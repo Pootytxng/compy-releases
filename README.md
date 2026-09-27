@@ -29,10 +29,15 @@ English. Every change it applies is snapshotted first, so it can be rolled back.
 
 These are design constraints enforced in the code, not promises in a README:
 
-- **No kernel driver.** Compy installs no driver and requires none. It will not put your anti-cheat
-  at risk.
-- **No game injection.** Nothing is injected into any running game.
-- **No telemetry.** Compy does not phone home with your data.
+- **No kernel driver.** Compy installs no driver and requires none.
+- **No game injection.** Nothing is injected into any running game. FPS is read from outside the
+  game; the overlay is a separate window (borderless/windowed only). That is the anti-cheat design.
+  It is not a promise that a given anti-cheat will never notice an overlay or event tracing.
+- **No upload of your PC.** Hardware, sessions, and the Trust Ledger stay on your disk. Compy does
+  make **one automatic network call:** a signed update check against this repository (see
+  **Updates**). That request carries none of your data. GitHub still sees ordinary connection
+  metadata such as your IP, under GitHub's terms. You can switch the check off in
+  Settings → About. Full wording is in the [Privacy Policy](https://compy-bd6.pages.dev/privacy.html).
 - **It will not touch your security.** Windows Defender, the Windows Firewall, the Security Health
   service, Windows Update and the Base Filtering Engine can never be suspended or disabled by Compy.
   That boundary is enforced by a test that names each of those services individually.
@@ -47,8 +52,6 @@ These are design constraints enforced in the code, not promises in a README:
 
 Compy asks for administrator permission only at the moment it applies a change that genuinely needs
 it, and it tells you which change that is.
-
-**Silent install** (for scripted deployment): `Compy_<version>_x64-setup.exe /S`
 
 ### Requirements
 
@@ -72,8 +75,16 @@ hash on its release page.
 
 ## Updates
 
-Compy checks for updates itself and can install them in place. Update packages are cryptographically
-signed, and Compy refuses any update whose signature does not verify.
+Compy checks this repository for a newer version when it starts, and about every four hours while it
+stays open. The check fetches `latest.json` from GitHub (`github.com`, then GitHub's release-asset
+host). It sends no hardware inventory, sessions, or settings.
+
+**Nothing downloads until you choose Update now.** The installer must then verify against the public
+key built into Compy. That signature is Compy's own updater key, **not** a Windows Authenticode
+publisher certificate — SmartScreen will still warn until the installer is code-signed.
+
+Turn automatic checks off in **Settings → About**. **Check now** in the same row runs a single check
+when you ask. Turning checks off never weakens signature verification.
 
 ## Uninstall
 
@@ -81,7 +92,9 @@ Settings → Apps → Installed apps → **Compy** → Uninstall. Or run the uni
 `%LOCALAPPDATA%\Compy`.
 
 Rolling back changes and uninstalling are separate things: **roll back your applied changes from
-inside Compy before uninstalling** if you want the machine returned to how it was.
+inside Compy before uninstalling** if you want the machine returned to how it was. History stays in
+`%APPDATA%\Compy` by design so rollback records survive a reinstall. Delete that folder yourself if
+you want everything gone.
 
 ## Reporting a problem
 
